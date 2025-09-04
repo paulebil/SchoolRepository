@@ -3,6 +3,9 @@ from app.database.database import init_db
 from contextlib import asynccontextmanager
 
 from app.models.user import User
+from app.models.token import Token
+from app.models.school import School
+from app.models.department import Department
 
 @asynccontextmanager
 async def lifespan(app_:FastAPI):
