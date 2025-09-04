@@ -1,7 +1,20 @@
 from fastapi import FastAPI
+from app.database.database import init_db
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app_:FastAPI):
+    # startup
+    await init_db()
+    yield
+    # shutdown
+
+def create_application():
+    application = FastAPI(lifespan=lifespan)
+    return application
 
 
-app = FastAPI()
+app = create_application()
 
 @app.get("/")
 async def index():
