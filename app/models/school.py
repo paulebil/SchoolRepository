@@ -18,5 +18,9 @@ class School(Base):
     logo_url: Mapped[str | None] = mapped_column(String, nullable=True)
     location: Mapped[str | None] = mapped_column(String, nullable=True)
     website: Mapped[str | None] = mapped_column(String, nullable=True)
+    email: Mapped[str] = mapped_column(String, nullable=True)
+    admin_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    address: Mapped[str] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(default=datetime.now(timezone.utc))
 
