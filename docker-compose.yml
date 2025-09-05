@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  smtp-mail-service:
+    image: axllent/mailpit:v1.23
+    container_name: smtp-mail
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      school_repo:
+
+networks:
+  school_repo:
+      driver: bridge
