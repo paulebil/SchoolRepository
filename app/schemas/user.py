@@ -54,3 +54,8 @@ class UserResponse(BaseModel):
     supervisor_id: Optional[uuid.UUID] = None
 
     model_config = {"from_attributes": True}
+
+class ActivateUserSchema(BaseModel):
+    email: str
+    token: str
+

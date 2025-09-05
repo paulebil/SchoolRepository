@@ -50,7 +50,7 @@ class UserAuthEmailService:
         data = {
             "app_name": settings.APP_NAME,
             "name": user.first_name,
-            "login_url": f"{settings.FRONTED_HOST_LOGIN}"
+            "login_url": f"{settings.FRONTEND_HOST}"
         }
 
         subject = f"Welcome - {settings.APP_NAME}"
@@ -90,7 +90,7 @@ class UserAuthEmailService:
         data = {
             "app_name": settings.APP_NAME,
             "name": user.first_name,
-            "login_url": f"{settings.FRONTED_HOST_LOGIN}"
+            "login_url": f"{settings.FRONTNED_HOST}"
         }
 
         subject = f"Welcome - {settings.APP_NAME}"
@@ -109,7 +109,7 @@ class UserAuthEmailService:
         data = {
             "app_name": settings.APP_NAME,
             "name": user.first_name,
-            "login_url": f"{settings.FRONTED_HOST_LOGIN}"
+            "login_url": f"{settings.FRONTNED_HOST}"
         }
 
         subject = f"Welcome - {settings.APP_NAME}"
