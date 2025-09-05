@@ -1,5 +1,13 @@
 # SchoolPaperRepository System
-
+This system is a digital academic repository designed for institutions of higher learning. It allows schools to create
+accounts and organize their departments, lecturers, and students in a structured way. Students can upload their research
+papers, which go through an approval workflow where lecturers review and either approve, request revisions, or reject 
+the work before it is published. Lecturers can also upload past exam papers and other digital reading materials such as 
+notes, slides, and textbooks for students to access. Admins are responsible for managing the school account, creating 
+departments, and overseeing users. Access is controlled through invitation links — schools invite lecturers, and 
+lecturers invite their students — ensuring that users are correctly linked to their institution and department. The 
+repository provides a central place for storing and retrieving research papers, past papers, and academic resources, 
+with approved content being visible and downloadable within the school, and optionally to the public.
 ```commandline
 Admin (School Owner)
 │
