@@ -37,3 +37,29 @@ Admin (School Owner)
 
 ```
 
+```commandline
+[School] 1 ──< has ── 0..* [Department]
+   |
+   └─< has ── 0..* [User] (admin, lecturer, student)
+                   |
+                   ├─< creates ── 0..* [SignupToken]
+                   |
+                   ├─< has ── 0..* [UserToken]
+                   |
+                   ├─< has ── 0..* [PasswordResetToken]
+                   |
+                   ├─< supervises ── 0..* [ResearchPaper] (as supervisor/lecturer)
+                   |
+                   └─< uploads ── 0..* [PastPaper] / [ReadingMaterial]
+
+[Department] 1 ──< contains ── 0..* [ResearchPaper], [PastPaper], [ReadingMaterial]
+                   |
+                   └─< contains ── 0..* [User] (students & lecturers)
+
+[ResearchPaper] 1 ──< has ── 0..* [ResearchAuthors] ──> 1 [User] (student)
+[ResearchPaper] 1 ──< has ── 0..* [ResearchReview] ──> 1 [User] (lecturer reviewer)
+
+[PastPaper] 0..* ──> 1 [User] (lecturer uploader)
+[ReadingMaterial] 0..* ──> 1 [User] (lecturer uploader)
+
+```
