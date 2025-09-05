@@ -59,3 +59,7 @@ class ActivateUserSchema(BaseModel):
     email: str
     token: str
 
+class UserLoginSchema(BaseModel):
+    username: str
+    password: str
+

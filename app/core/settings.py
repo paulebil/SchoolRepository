@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     FRONTEND_HOST: str
 
+    # JWT Secret key
+    JWT_SECRET: str
+    JWT_ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
+    REFRESH_TOKEN_EXPIRE_MINUTES: int
+
     SMTP_HOST: str
     SMTP_PORT: int
     SMTP_FROM: EmailStr
@@ -29,11 +35,11 @@ class Settings(BaseSettings):
     )
 
     # Un-comment this lines of code to print the loaded settings
-    def __init__(self, **values):
-        super().__init__(**values)
-        print("\nLoaded settings:")
-        for key, value in self.model_dump().items():
-            print(f"{key}: {value} ({type(value).__name__})")
+    # def __init__(self, **values):
+    #     super().__init__(**values)
+    #     print("\nLoaded settings:")
+    #     for key, value in self.model_dump().items():
+    #         print(f"{key}: {value} ({type(value).__name__})")
 
 @lru_cache()
 def get_settings() -> Settings:

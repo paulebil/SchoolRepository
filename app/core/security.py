@@ -2,9 +2,15 @@ import jwt
 import base64
 import re
 from passlib.context import CryptContext
+from datetime import timedelta, datetime, timezone
 
 
 from fastapi.security import OAuth2PasswordBearer
+
+from app.core.settings import Settings
+from app.utils.string import unique_string
+
+settings = Settings()
 
 class Security:
 
@@ -31,4 +37,22 @@ class Security:
     @staticmethod
     def str_decode(encoded_str: str) -> str:
         return base64.b85decode(encoded_str.encode('utf-8')).decode('utf-8')
+
+    @staticmethod
+    def generate_token(payload: dict, expiry: timedelta) -> str:
+        token_payload = payload.copy()
+        token_payload.update({
+            "exp": datetime.now(timezone.utc) + expiry,
+            "iat": datetime.now(timezone.utc)
+        })
+
+        return jwt.encode(token_payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+
+    def generate_token_pair(self):
+        refresh_key = unique_string(100)
+        access_key = unique_string(100)
+        rt_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
+
+        pass
+
 

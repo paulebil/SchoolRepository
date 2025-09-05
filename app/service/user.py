@@ -52,3 +52,13 @@ class UserService:
         updated_user = await self.user_repository.update_user(user_to_activate)
         await UserAuthEmailService.send_account_activation_confirmation_email(updated_user, background_tasks)
         return JSONResponse({"message": "Account is activated successfully. Check your email for confirmation."})
+
+    async def get_login_tokens(self, data:UserLoginSchema):
+        user_to_login = await self.user_repository.get_user_by_email(data.username)
+        if not user_to_login:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this email does not exits")
+        if not security.verify_password(data.password, user_to_login.password_hash):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid username or password")
+        if not user_to_login.is_active:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is not activated")
+        pass
