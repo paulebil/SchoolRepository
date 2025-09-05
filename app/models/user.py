@@ -33,3 +33,45 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f"<User id={self.id} name={self.first_name},{self.last_name} role={self.role}>"
+
+class UserToken(Base):
+    __tablename__ = "user_tokens"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+    )
+
+    access_key: Mapped[str | None] = mapped_column(String(250), index=True, nullable=True)
+    refresh_key: Mapped[str | None] = mapped_column(String(250), index=True, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=datetime.now(timezone.utc), nullable=False
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    # Relationship back to User
+    user: Mapped["User"] = relationship(back_populates="tokens")
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+    )
+
+    token_hash: Mapped[str] = mapped_column(String(255), nullable=False)  # hashed token
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    # Relationship back to User
+    user: Mapped["User"] = relationship(back_populates="password_reset_tokens")
+
+    def __repr__(self) -> str:
+        return f"<PasswordResetToken(user_id={self.user_id}, token_hash={self.token_hash})>"
