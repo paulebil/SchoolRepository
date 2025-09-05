@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
 
 from app.repository.user import UserRepository
-from app.schemas.user import UserCreate, UserResponse
-from app.models.user import User
+from app.schemas.user import *
+from app.models.user import User, UserRole
 
 from app.core.security import Security
 
@@ -12,7 +12,7 @@ class UserService:
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
 
-    async def create_user(self, data: UserCreate) -> UserResponse:
+    async def create_admin_user(self, data: CreateAdminUser) -> UserResponse:
         user_exists = await self.user_repository.get_user_by_email(str(data.email))
         if user_exists:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User with this email already exists.")
@@ -20,5 +20,6 @@ class UserService:
         data.password_hash = hashed_password
         user_dict = data.model_dump()
         user_to_create = User(**user_dict)
+        user_to_create.role = UserRole.ADMIN
         user = await self.user_repository.create_user(user_to_create)
         return UserResponse.model_validate(user)
