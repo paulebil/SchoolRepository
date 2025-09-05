@@ -11,7 +11,7 @@ class UserCreate(BaseModel):
     last_name: str
     email: EmailStr
     phone_number: Optional[str] = None
-    password: str
+    password_hash: str
     role: UserRole
     school_id: Optional[uuid.UUID] = None
     department_id: Optional[uuid.UUID] = None

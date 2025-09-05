@@ -28,7 +28,7 @@ class SupervisorComment(Base):
 
     # Relationships
     research_paper: Mapped["ResearchPaper"] = relationship(
-        "ResearchPaper", back_populates="reviews"
+        "ResearchPaper", back_populates="comments"
     )
     reviewer: Mapped["User"] = relationship("User", backref="supervisor_comments")
 

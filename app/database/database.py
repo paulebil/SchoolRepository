@@ -9,7 +9,7 @@ settings = get_settings()
 database_url = settings.DATABASE_URL
 
 # Create the async engine
-async_engine = create_async_engine(database_url, echo=True)
+async_engine = create_async_engine(database_url, echo=False)
 
 # Create the async session factory
 AsyncSessionLocal = async_sessionmaker(bind=async_engine, expire_on_commit=False)

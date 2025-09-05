@@ -16,8 +16,8 @@ class UserService:
         user_exists = await self.user_repository.get_user_by_email(str(data.email))
         if user_exists:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User with this email already exists.")
-        hashed_password = security.hash_password(data.password)
-        data.password = hashed_password
+        hashed_password = security.hash_password(data.password_hash)
+        data.password_hash = hashed_password
         user_dict = data.model_dump()
         user_to_create = User(**user_dict)
         user = await self.user_repository.create_user(user_to_create)
