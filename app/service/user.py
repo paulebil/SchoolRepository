@@ -11,15 +11,19 @@ from app.schemas.user import *
 from app.models.user import User, UserRole
 from app.service.email_service import UserAuthEmailService
 
+from app.service.password_reset import PasswordResetService
+from app.repository.password_reset import PasswordResetRepository
+
 from app.core.security import Security
 from app.utils.email_context import USER_VERIFY_ACCOUNT
 
 security = Security()
 
 class UserService:
-    def __init__(self, user_repository: UserRepository, user_jwt_token_repository: UserJwtToken):
+    def __init__(self, user_repository: UserRepository, user_jwt_token_repository: UserJwtToken, password_reset_repository: PasswordResetRepository):
         self.user_repository = user_repository
         self.user_jwt_token_repository = user_jwt_token_repository
+        self.password_reset_service = PasswordResetService(password_reset_repository, user_repository)
 
     async def create_admin_user(self, data: CreateAdminUser, background_tasks: BackgroundTasks) -> UserResponse:
         user_exists = await self.user_repository.get_user_by_email(str(data.email))
@@ -97,3 +101,25 @@ class UserService:
         await self.user_jwt_token_repository.create_jwt_token(user_token)
 
         return await security.generate_token_pair(user, self.user_jwt_token_repository)
+
+    async def email_forgot_password_link(self, data: UserForgotPasswordSchema, background_tasks: BackgroundTasks):
+        user = await security.load_user(data.email, self.user_repository)
+        if not user.verified_at:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Your account is not verified.")
+        if not user.is_active:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Your account has been deactivated.")
+        await self.password_reset_service.send_password_reset_email(user, background_tasks)
+        return JSONResponse({"message": "A email with password reset link has been sent to you."})
+
+    # async def reset_password(self, data: UserRestPasswordSchema):
+    #     user = await security.load_user(data.email, session)
+    #     if not user or not user.verified_at or not user.is_active:
+    #         raise HTTPException(status_code=400, detail="Invalid request")
+    #     token_valid = self.password_reset_service.reset_password(user.email, data.token, data.password)
+    #     if not token_valid:
+    #         raise HTTPException(status_code=400, detail="Invalid request window.")
+    #     user.password = security.hash_password(data.password)
+    #     user.updated_at = datetime.now()
+    #     self.user_repository.update_user(user)
+    #     return JSONResponse({"message": "Password updated successfully"})
+    #

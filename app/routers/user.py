@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.service.user import UserService, security
 from app.repository.user import UserRepository, User
 from app.repository.user_jwt_token import UserJwtToken
+from app.repository.password_reset import PasswordResetRepository
 from app.schemas.user import *
 
 
@@ -25,7 +26,8 @@ auth_router = APIRouter(
 def get_user_service(session: AsyncSession = Depends(get_session)) -> UserService:
     user_repository = UserRepository(session)
     user_jwt_repository = UserJwtToken(session)
-    return UserService(user_repository, user_jwt_repository)
+    password_reset_repository = PasswordResetRepository(session)
+    return UserService(user_repository, user_jwt_repository, password_reset_repository)
 
 @admin_user_router.post("/user", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
 async def create_admin_user(data: CreateAdminUser, background_tasks: BackgroundTasks, user_service: UserService = Depends(get_user_service)):
@@ -54,3 +56,7 @@ async def get_user_detail(
 @admin_user_router.post("/refresh", status_code=status.HTTP_200_OK, response_model=UserLoginResponse)
 async def refresh_token(token = Header(), user_service: UserService = Depends(get_user_service)):
     return await user_service.get_refresh_token(token)
+
+@admin_user_router.post("/forgot-password", status_code=status.HTTP_200_OK)
+async def forgot_password(data: UserForgotPasswordSchema, background_tasks: BackgroundTasks,user_service: UserService = Depends(get_user_service)):
+    return await user_service.email_forgot_password_link(data, background_tasks)

@@ -69,3 +69,12 @@ class UserLoginResponse(BaseModel):
     refresh_token: str
     expires_in: int
     token_type: str = "Bearer"
+
+
+class UserForgotPasswordSchema(BaseModel):
+    email: str
+
+class UserRestPasswordSchema(BaseModel):
+    email: str
+    token: str
+    password: str
