@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, BackgroundTasks
+from fastapi import APIRouter, status, Depends, BackgroundTasks, Header
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.database.database import get_session
@@ -50,3 +50,7 @@ async def get_user_detail(
     return current_user
 
 
+
+@admin_user_router.post("/refresh", status_code=status.HTTP_200_OK, response_model=UserLoginResponse)
+async def refresh_token(token = Header(), user_service: UserService = Depends(get_user_service)):
+    return await user_service.get_refresh_token(token)

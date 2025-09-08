@@ -5,7 +5,7 @@ from sqlalchemy.orm import joinedload
 
 from datetime import datetime, timezone
 
-from app.models.user import UserToken
+from app.models.user import UserToken, User
 from typing import Optional
 
 from uuid import UUID
@@ -42,3 +42,31 @@ class UserJwtToken:
 
         result = await self.session.scalars(stmt)
         return result.first()
+
+    async def get_valid_user_token_with_user(
+            self,
+            user_id: UUID,
+            access_key: str,
+            refresh_key: str
+    ) -> tuple[UserToken, User] | None:
+        """
+        Fetch the first valid user token with matching user_id, access_key,
+        and refresh_key that has not expired, along with the associated User object.
+        """
+        stmt = (
+            select(UserToken)
+            .options(joinedload(UserToken.user))
+            .where(
+                UserToken.user_id == user_id,
+                UserToken.access_key == access_key,
+                UserToken.refresh_key == refresh_key,
+                UserToken.expires_at > datetime.now()
+            )
+        )
+
+        result = await self.session.execute(stmt)
+        user_token = result.scalars().first()
+
+        if user_token:
+            return user_token, user_token.user
+        return None

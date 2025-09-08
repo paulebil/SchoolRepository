@@ -137,7 +137,6 @@ class Security:
             user_token_id = self.str_decode(payload.get('r'))
             user_id = self.str_decode(payload.get('sub'))
             access_key = payload.get('a')
-
             user_token_id_uuid = UUID(user_token_id)
             user_id_uuid = UUID(user_id)
             user_token = await user_jwt_token_repository.get_user_token(user_token_id_uuid, user_id_uuid, access_key)

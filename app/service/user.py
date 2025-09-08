@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timezone
+from uuid import UUID
 
 from fastapi import HTTPException, status, BackgroundTasks
 from fastapi.responses import JSONResponse
@@ -66,6 +67,33 @@ class UserService:
         return await security.generate_token_pair(user_to_login, self.user_jwt_token_repository)
 
     async def get_user_detail(self, user_id: str):
-        user_uuid = uuid.UUID(user_id)
+        user_uuid = UUID(user_id)
         user = await self.user_repository.get_user_by_id(user_uuid)
         return UserResponse.model_validate(user)
+
+    async def get_refresh_token(self, refresh_token: str):
+        token_payload = security.get_token_payload(refresh_token)
+        if not token_payload:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Request 1")
+
+        refresh_key = token_payload.get('t')
+        access_key = token_payload.get('a')
+        user_id = security.str_decode(token_payload.get('sub'))
+        user_id_uuid = UUID(user_id)
+
+        # Call the tuple-returning repository function
+        result = await self.user_jwt_token_repository.get_valid_user_token_with_user(
+            user_id=user_id_uuid,
+            access_key=access_key,
+            refresh_key=refresh_key
+        )
+
+        # Unpack the tuple
+        if not result:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid Request 2")
+        user_token, user = result
+        # Update expiration
+        user_token.expires_at = datetime.now(timezone.utc)
+        await self.user_jwt_token_repository.create_jwt_token(user_token)
+
+        return await security.generate_token_pair(user, self.user_jwt_token_repository)
