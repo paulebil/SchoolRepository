@@ -5,6 +5,7 @@ from fastapi import HTTPException, status, BackgroundTasks
 from fastapi.responses import JSONResponse
 
 from app.repository.user import UserRepository
+from app.repository.user_jwt_token import UserJwtToken
 from app.schemas.user import *
 from app.models.user import User, UserRole
 from app.service.email_service import UserAuthEmailService
@@ -15,8 +16,9 @@ from app.utils.email_context import USER_VERIFY_ACCOUNT
 security = Security()
 
 class UserService:
-    def __init__(self, user_repository: UserRepository):
+    def __init__(self, user_repository: UserRepository, user_jwt_token_repository: UserJwtToken):
         self.user_repository = user_repository
+        self.user_jwt_token_repository = user_jwt_token_repository
 
     async def create_admin_user(self, data: CreateAdminUser, background_tasks: BackgroundTasks) -> UserResponse:
         user_exists = await self.user_repository.get_user_by_email(str(data.email))
@@ -61,4 +63,4 @@ class UserService:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid username or password")
         if not user_to_login.is_active:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is not activated")
-        pass
+        return await security.generate_token_pair(user_to_login, self.user_jwt_token_repository)

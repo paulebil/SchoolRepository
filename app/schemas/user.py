@@ -63,3 +63,9 @@ class UserLoginSchema(BaseModel):
     username: str
     password: str
 
+class UserLoginResponse(BaseModel):
+    user_role: str
+    access_token: str
+    refresh_token: str
+    expires_in: int
+    token_type: str = "Bearer"
