@@ -64,3 +64,8 @@ class UserService:
         if not user_to_login.is_active:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is not activated")
         return await security.generate_token_pair(user_to_login, self.user_jwt_token_repository)
+
+    async def get_user_detail(self, user_id: str):
+        user_uuid = uuid.UUID(user_id)
+        user = await self.user_repository.get_user_by_id(user_uuid)
+        return UserResponse.model_validate(user)

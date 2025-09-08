@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 from app.models.user import UserToken
 from typing import Optional
 
+from uuid import UUID
+
 
 class UserJwtToken:
     def __init__(self, session: AsyncSession):
@@ -23,7 +25,7 @@ class UserJwtToken:
             await self.session.rollback()
             raise
 
-    async def get_user_token(self,  user_token_id: str ,user_id: str, access_key: str, ) -> Optional["UserToken"]:
+    async def get_user_token(self,  user_token_id: UUID ,user_id: UUID, access_key: str, ) -> Optional["UserToken"]:
         """
         Fetch a valid user token (with its related user) if it exists and has not expired.
         """

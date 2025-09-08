@@ -1,5 +1,6 @@
 import logging
 import jwt
+from uuid import UUID
 import base64
 import re
 from datetime import timedelta, datetime, timezone
@@ -15,12 +16,20 @@ from app.models.user import UserToken, User
 from app.repository.user_jwt_token import UserJwtToken
 from app.repository.user import UserRepository
 
+from fastapi import Depends
+from app.database.database import get_session
+
 settings = Settings()
+
+
+
+def get_user_jwt_token_repository(db=Depends(get_session)) -> UserJwtToken:
+    return UserJwtToken(db)
 
 class Security:
     password_regex = re.compile(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$')
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+    oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
 
     @staticmethod
     def hash_password(password: str) -> str:
@@ -128,9 +137,10 @@ class Security:
             user_token_id = self.str_decode(payload.get('r'))
             user_id = self.str_decode(payload.get('sub'))
             access_key = payload.get('a')
-            user_token = await user_jwt_token_repository.get_user_token(
-                user_token_id, user_id, access_key
-            )
+
+            user_token_id_uuid = UUID(user_token_id)
+            user_id_uuid = UUID(user_id)
+            user_token = await user_jwt_token_repository.get_user_token(user_token_id_uuid, user_id_uuid, access_key)
             return user_token.user if user_token else None
         except Exception as e:
             logging.error(f"Token verification error: {str(e)}")
@@ -142,8 +152,8 @@ class Security:
 
     async def get_current_user(
         self,
-        token: str,
-        user_jwt_token_repository: UserJwtToken
+        token: str = Depends(oauth2_scheme),
+        user_jwt_token_repository: UserJwtToken = Depends(get_user_jwt_token_repository)
     ) -> User:
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
