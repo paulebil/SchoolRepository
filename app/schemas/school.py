@@ -28,7 +28,7 @@ class SchoolCreate(BaseModel):
     }
 
 
-class SchoolRead(BaseModel):
+class SchoolResponse(BaseModel):
     id: uuid.UUID
     name: str
     logo_url: HttpUrl | None = None
