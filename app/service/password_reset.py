@@ -22,6 +22,8 @@ class PasswordResetService:
     async def send_password_reset_email(self, user: User, background_tasks: BackgroundTasks):
         """Generate password reset token and send email to the user."""
 
+        # TODO: Make the token url safe
+
         string_context = user.get_context_string(context="FORGOT_PASSWORD")
         print(f"Sent string context: {string_context}")
         token = secrets.token_urlsafe(32)
