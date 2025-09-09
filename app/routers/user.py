@@ -60,3 +60,8 @@ async def refresh_token(token = Header(), user_service: UserService = Depends(ge
 @admin_user_router.post("/forgot-password", status_code=status.HTTP_200_OK)
 async def forgot_password(data: UserForgotPasswordSchema, background_tasks: BackgroundTasks,user_service: UserService = Depends(get_user_service)):
     return await user_service.email_forgot_password_link(data, background_tasks)
+
+@admin_user_router.put("/reset-password", status_code=status.HTTP_200_OK)
+async def reset_password(data: UserRestPasswordSchema, user_service: UserService = Depends(get_user_service)):
+    return await user_service.reset_password(data)
+

@@ -1,4 +1,5 @@
 from fastapi import BackgroundTasks, HTTPException
+import secrets
 
 from app.repository.password_reset import PasswordResetRepository
 from app.repository.user import UserRepository
@@ -22,12 +23,15 @@ class PasswordResetService:
         """Generate password reset token and send email to the user."""
 
         string_context = user.get_context_string(context="FORGOT_PASSWORD")
+        print(f"Sent string context: {string_context}")
+        token = secrets.token_urlsafe(32)
+        raw_token = f"{string_context}:{token}"
 
         # Store token in the database
-        reset_token = await self.password_reset_repository.create_password_reset_token(user.id, string_context)
+        await self.password_reset_repository.create_password_reset_token(user.id, raw_token)
 
         # Prepare reset URL
-        reset_url = f"{settings.FRONTEND_HOST}/reset-password?token={reset_token.token_hash}&email={user.email}"
+        reset_url = f"{settings.FRONTEND_HOST}/reset-password?token={raw_token}&email={user.email}"
 
         # Prepare email content and send
         data = {
@@ -55,7 +59,10 @@ class PasswordResetService:
             raise HTTPException(status_code=400, detail="Invalid request")
 
         # Validate reset token
+        print(f"User Id: {user.id}")
+        print(f"User token: {token}")
         reset_token  = await self.password_reset_repository.get_valid_reset_token(user.id, token)
+        print(f"Retrived token: {reset_token}")
         if not reset_token:
             raise HTTPException(status_code=400, detail="Invalid or expired token")
 

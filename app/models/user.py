@@ -38,7 +38,7 @@ class User(Base):
     password_reset_tokens: Mapped[list["PasswordResetToken"]] = relationship("PasswordResetToken", back_populates="user", cascade="all, delete-orphan")
 
     def get_context_string(self, context: str):
-        return f"{context}{self.password_hash[-6]}{self.phone_number}".strip()
+        return f"{context}{self.password_hash[-6]}{self.created_at}".strip()
 
     def __repr__(self) -> str:
         return f"<User id={self.id} name={self.first_name} {self.last_name} role={self.role}>"

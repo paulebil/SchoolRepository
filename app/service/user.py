@@ -111,15 +111,16 @@ class UserService:
         await self.password_reset_service.send_password_reset_email(user, background_tasks)
         return JSONResponse({"message": "A email with password reset link has been sent to you."})
 
-    # async def reset_password(self, data: UserRestPasswordSchema):
-    #     user = await security.load_user(data.email, session)
-    #     if not user or not user.verified_at or not user.is_active:
-    #         raise HTTPException(status_code=400, detail="Invalid request")
-    #     token_valid = self.password_reset_service.reset_password(user.email, data.token, data.password)
-    #     if not token_valid:
-    #         raise HTTPException(status_code=400, detail="Invalid request window.")
-    #     user.password = security.hash_password(data.password)
-    #     user.updated_at = datetime.now()
-    #     self.user_repository.update_user(user)
-    #     return JSONResponse({"message": "Password updated successfully"})
-    #
+    async def reset_password(self, data: UserRestPasswordSchema):
+        user = await security.load_user(data.email, self.user_repository)
+        if not user or not user.verified_at or not user.is_active:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request")
+        user_email = str(user.email)
+        token_valid = await self.password_reset_service.reset_password(user_email, data.token, data.password)
+        if not token_valid:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request window.")
+        user.password = security.hash_password(data.password)
+        user.updated_at = datetime.now(timezone.utc)
+        await self.user_repository.update_user(user)
+        return JSONResponse({"message": "Password updated successfully"})
+
