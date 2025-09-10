@@ -26,3 +26,7 @@ class DepartmentRepository:
         result = await self.session.execute(stmt)
         return result.scalars()
 
+    async def get_departments_by_department_id(self, department_id: UUID):
+        stmt = select(Department).where(Department.id == department_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
