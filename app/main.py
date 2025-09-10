@@ -3,7 +3,7 @@ from app.database.database import init_db
 from contextlib import asynccontextmanager
 
 from app.models.user import User, UserToken, PasswordResetToken
-from app.models.token import SignupToken
+from app.models.signup_token import SignupToken
 from app.models.school import School
 from app.models.department import Department
 from app.models.supervisor_comment import SupervisorComment

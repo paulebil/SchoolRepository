@@ -13,7 +13,7 @@ from uuid import UUID
 
 sch_router = APIRouter(
     prefix="/sch",
-    tags=["SCH"],
+    tags=["Sch"],
     responses={404: {"description": "Not found"}},
     dependencies=[Depends(security.oauth2_scheme), Depends(security.get_current_user)]
 )

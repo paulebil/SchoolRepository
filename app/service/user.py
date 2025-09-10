@@ -124,3 +124,6 @@ class UserService:
         await self.user_repository.update_user(user)
         return JSONResponse({"message": "Password updated successfully"})
 
+
+    async def create_lecturer_login_token(self):
+        pass
