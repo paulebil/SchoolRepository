@@ -3,7 +3,7 @@ from uuid import UUID
 
 from app.repository.school import SchoolRepository, School
 from app.schemas.school import SchoolCreate, SchoolResponse
-from app.repository.user import UserRepository
+from app.repository.user import UserRepository, User
 from app.models.user import UserRole
 
 class SchoolService:
@@ -34,3 +34,22 @@ class SchoolService:
         school_to_create = School(**school_dict)
         created_school = await self.school_repository.create_school(school_to_create)
         return SchoolResponse.model_validate(created_school)
+
+    async def get_my_school(self, school_id: UUID, current_user: User) -> SchoolResponse:
+        # check if user exists
+        user_exists = await self.user_repository.get_user_by_id(current_user.id)
+        if not user_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
+        # check if user is an admin
+        if user_exists.role != UserRole.ADMIN:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+        # check if user is active
+        if not user_exists.is_active:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="User account is not active. Cannot perform this action")
+        # check if school already exist
+        school_exists = await self.school_repository.get_school_by_id(school_id)
+        if not school_exists:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="School with this id doesn't exists.")
+
+        return SchoolResponse.model_validate(school_exists)
