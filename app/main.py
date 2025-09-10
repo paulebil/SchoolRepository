@@ -14,6 +14,7 @@ from app.models.reading_material import ReadingMaterial
 
 from app.routers.user import admin_user_router, auth_router
 from app.routers.school import sch_router
+from app.routers.department import dept_router
 
 @asynccontextmanager
 async def lifespan(app_:FastAPI):
@@ -27,6 +28,7 @@ def create_application():
     application.include_router(admin_user_router)
     application.include_router(auth_router)
     application.include_router(sch_router)
+    application.include_router(dept_router)
     return application
 
 

@@ -1,0 +1,32 @@
+from fastapi import APIRouter, Depends, status, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.service.user import security
+from app.database.database import get_session
+
+from app.repository.user import UserRepository, User
+from app.repository.school import SchoolRepository
+from app.repository.department import DepartmentRepository
+from app.service.department import DepartmentService
+from app.schemas.department import *
+
+from uuid import UUID
+
+dept_router = APIRouter(
+    prefix="/dept",
+    tags=["Dept"],
+    responses={404: {"description": "Not found"}},
+    dependencies=[Depends(security.oauth2_scheme), Depends(security.get_current_user)]
+)
+
+
+def get_department_service(session: AsyncSession = Depends(get_session)) -> DepartmentService:
+    user_repository = UserRepository(session)
+    school_repository = SchoolRepository(session)
+    department_repository = DepartmentRepository(session)
+    return DepartmentService(department_repository, school_repository, user_repository)
+
+@dept_router.post("/create", status_code=status.HTTP_201_CREATED, response_model=DepartmentResponse)
+async def create_department(data: DepartmentCreate, department_service: DepartmentService = Depends(get_department_service),
+                            current_user: User = Depends(security.get_current_user)):
+    return await department_service.create_department(data, current_user)
