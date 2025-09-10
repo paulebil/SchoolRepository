@@ -11,6 +11,7 @@ from app.service.department import DepartmentService
 from app.schemas.department import *
 
 from uuid import UUID
+from typing import List
 
 dept_router = APIRouter(
     prefix="/dept",
@@ -30,3 +31,8 @@ def get_department_service(session: AsyncSession = Depends(get_session)) -> Depa
 async def create_department(data: DepartmentCreate, department_service: DepartmentService = Depends(get_department_service),
                             current_user: User = Depends(security.get_current_user)):
     return await department_service.create_department(data, current_user)
+
+@dept_router.get("/departments", status_code=status.HTTP_200_OK, response_model=List[DepartmentResponse])
+async def get_departments(school_id: UUID = Query(..., description="UUID of the school"), department_service: DepartmentService = Depends(get_department_service),
+                          current_user: User = Depends(security.get_current_user)):
+    return await department_service.get_departments(school_id, current_user)
