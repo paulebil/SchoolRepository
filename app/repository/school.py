@@ -42,6 +42,6 @@ class SchoolRepository:
         return result.scalar_one_or_none()
 
     async def get_school_by_name(self, school_name: str):
-        stmt = select(School).where(School.name == name)
+        stmt = select(School).where(School.name == school_name)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()

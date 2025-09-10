@@ -13,12 +13,11 @@ class SchoolService:
 
     async def create_school(self, data: SchoolCreate) -> SchoolResponse:
         # check if user exists
-        user_id_uuid = UUID(data.admin_id)
-        user_exists = await self.user_repository.get_user_by_id(user_id_uuid)
+        user_exists = await self.user_repository.get_user_by_id(data.admin_id)
         if not user_exists:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
         # check if user is an admin
-        if user_exists.role != UserRole.ADMIN.value:
+        if user_exists.role != UserRole.ADMIN:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
         # check if user is active
         if not user_exists.is_active:
@@ -28,7 +27,10 @@ class SchoolService:
         if school_exists:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="School with this name already exist")
         # proceed to create school
-        school_dict = data.model_dump()
+        school_dict = data.model_dump(mode="json")
+        # ensure admin_id is UUID (not str)
+        if school_dict.get("admin_id"):
+            school_dict["admin_id"] = UUID(school_dict["admin_id"])
         school_to_create = School(**school_dict)
         created_school = await self.school_repository.create_school(school_to_create)
         return SchoolResponse.model_validate(created_school)
