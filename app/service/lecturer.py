@@ -42,3 +42,19 @@ class LecturerService:
 
         link = f"https://localhost:3000/signup?token={created_token.token}"
         return SignupLinkResponse(link=link)
+
+    async def upload_reading_material(self, current_user: User):
+        # check if user exists
+        lecturer_exists = await self.user_repository.get_user_by_id(current_user.id)
+        if not lecturer_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
+        # check if user is an admin
+        if lecturer_exists.role != UserRole.LECTURER:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+        # check if user is active
+        if not lecturer_exists.is_active:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="User account is not active. Cannot perform this action")
+
+        # proceed to upload the reading material
+        pass
