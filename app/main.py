@@ -16,6 +16,7 @@ from app.routers.user import user_router, auth_router
 from app.routers.school import sch_router
 from app.routers.department import dept_router
 from app.routers.lecturer import lect_router
+from app.routers.student import stud_router
 
 @asynccontextmanager
 async def lifespan(app_:FastAPI):
@@ -31,6 +32,7 @@ def create_application():
     application.include_router(sch_router)
     application.include_router(dept_router)
     application.include_router(lect_router)
+    application.include_router(stud_router)
     return application
 
 
