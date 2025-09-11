@@ -2,6 +2,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 
+from uuid import UUID
+
 from app.models.reading_material import ReadingMaterial
 
 class ReadingMaterialRepository:
@@ -18,6 +20,7 @@ class ReadingMaterialRepository:
             await self.session.rollback()
             raise
 
-    async def get_reading_material(self):
-        stmt = select(ReadingMaterial)
-        pass
+    async def get_all_my_reading_material(self, lecturer_id: UUID):
+        stmt = select(ReadingMaterial).where(ReadingMaterial.lecturer_id == lecturer_id)
+        result = await self.session.execute(stmt)
+        return result.scalars()

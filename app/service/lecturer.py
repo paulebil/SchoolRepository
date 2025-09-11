@@ -87,4 +87,5 @@ class LecturerService:
 
         return JSONResponse(content= {"message": "Upload successful"},status_code=status.HTTP_200_OK)
 
-
+    async def get_all_my_reading_materials(self, current_user: User):
+        pass
