@@ -181,7 +181,7 @@ class LecturerService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
         # check if user is a lecturer
         if lecturer_exists.role != UserRole.LECTURER:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not a lecturer. Action not allowed.")
         # check if user is active
         if not lecturer_exists.is_active:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
@@ -207,7 +207,7 @@ class LecturerService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
         # check if user is a lecturer
         if lecturer_exists.role != UserRole.LECTURER:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not a lecturer. Action not allowed.")
         # check if user is active
         if not lecturer_exists.is_active:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
