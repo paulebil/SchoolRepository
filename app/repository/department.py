@@ -30,3 +30,8 @@ class DepartmentRepository:
         stmt = select(Department).where(Department.id == department_id)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def get_department_by_school_id_and_department_id(self, school_id: UUID, department_id: UUID):
+        stmt = select(Department).where(Department.school_id == school_id, Department.id == department_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()

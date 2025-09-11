@@ -13,6 +13,10 @@ from app.service.email_service import UserAuthEmailService
 
 from app.service.password_reset import PasswordResetService
 from app.repository.password_reset import PasswordResetRepository
+from app.repository.school import SchoolRepository
+from app.repository.signup_token import SignupTokenRepository
+from app.models.signup_token import SignupToken
+from app.repository.department import DepartmentRepository
 
 from app.core.security import Security
 from app.utils.email_context import USER_VERIFY_ACCOUNT
@@ -20,7 +24,12 @@ from app.utils.email_context import USER_VERIFY_ACCOUNT
 security = Security()
 
 class UserService:
-    def __init__(self, user_repository: UserRepository, user_jwt_token_repository: UserJwtToken, password_reset_repository: PasswordResetRepository):
+    def __init__(self, user_repository: UserRepository, user_jwt_token_repository: UserJwtToken,
+                 password_reset_repository: PasswordResetRepository, school_repository: SchoolRepository,
+                 signup_token_repository: SignupTokenRepository, department_repository: DepartmentRepository):
+        self.department_repository = department_repository
+        self.signup_token_repository = signup_token_repository
+        self.school_repository = school_repository
         self.user_repository = user_repository
         self.user_jwt_token_repository = user_jwt_token_repository
         self.password_reset_service = PasswordResetService(password_reset_repository, user_repository)
@@ -125,5 +134,40 @@ class UserService:
         return JSONResponse({"message": "Password updated successfully"})
 
 
-    async def create_lecturer_login_token(self):
-        pass
+    async def create_lecturer_login_token(self, school_id: UUID, department_id: UUID, current_user: User):
+        # check if user exists
+        user_exists = await self.user_repository.get_user_by_id(current_user.id)
+        if not user_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
+        # check if user is an admin
+        if user_exists.role != UserRole.ADMIN:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+        # check if user is active
+        if not user_exists.is_active:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="User account is not active. Cannot perform this action")
+        # check if user is the creator of the school
+
+        # check if school  exist
+        school_exists = await self.school_repository.get_school_by_id(school_id)
+        if not school_exists:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="School with this id does not exist")
+
+        # check if department exist and is under the school
+        department_exists = await self.department_repository.get_department_by_school_id_and_department_id(school_id, department_id)
+        if not department_exists:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="department with this id doesn't exist or belong to this school" )
+        # proceed to create the token
+        lecturer_signup_token = SignupToken(
+            school_id=school_id,
+            department_id=department_id,
+            role=UserRole.LECTURER,
+            generated_by=current_user.id,
+            used=False
+        )
+
+        lecturer_signup_token.generate_signup_token()
+
+        created_token = await self.signup_token_repository.create_signup_token(lecturer_signup_token)
+        link = f"https://localhost:3000/signup?token={created_token.token}"
+        return link

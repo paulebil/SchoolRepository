@@ -1,4 +1,5 @@
 import uuid
+import secrets
 from datetime import datetime
 from sqlalchemy import String, DateTime, Enum, Boolean, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -28,3 +29,6 @@ class SignupToken(Base):
 
     def __repr__(self) -> str:
         return f"<SignupToken id={self.id} role={self.role} used={self.used}>"
+
+    def generate_signup_token(self):
+        self.token = secrets.token_urlsafe(16)
