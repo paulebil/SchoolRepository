@@ -24,3 +24,8 @@ class ReadingMaterialRepository:
         stmt = select(ReadingMaterial).where(ReadingMaterial.lecturer_id == lecturer_id)
         result = await self.session.execute(stmt)
         return result.scalars()
+
+    async def get_reading_material(self, reading_material_id: UUID) -> ReadingMaterial:
+        stmt = select(ReadingMaterial).where(ReadingMaterial.id == reading_material_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()

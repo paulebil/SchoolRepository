@@ -114,3 +114,21 @@ class LecturerService:
 
         return content
 
+    async def get_reading_material_detail(self, reading_material_id: UUID, current_user: User) -> ReadingMaterialResponse:
+        # check if user exists
+        lecturer_exists = await self.user_repository.get_user_by_id(current_user.id)
+        if not lecturer_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
+        # check if user is a lecturer
+        if lecturer_exists.role != UserRole.LECTURER:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+        # check if user is active
+        if not lecturer_exists.is_active:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="User account is not active. Cannot perform this action")
+
+        bucket_name = settings.MINIO_READING_MATERIAL_BUCKET_NAME
+        reading_material = await self.reading_material_repository.get_reading_material(reading_material_id)
+        file_url = await generate_presigned_url(bucket_name, reading_material.object_name)
+        reading_material.file_url = file_url
+        return ReadingMaterialResponse.model_validate(reading_material)

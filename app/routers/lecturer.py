@@ -50,3 +50,9 @@ async def upload_reading_material(title: str = Form(), description: str = Form()
 async def get_all_my_reading_materials(current_user: User = Depends(security.get_current_user),
                                         lecturer_service: LecturerService = Depends(get_lecturer_service)):
     return await lecturer_service.get_all_my_reading_materials(current_user)
+
+@lect_router.get("/reading-material-detail", status_code=status.HTTP_200_OK, response_model=ReadingMaterialResponse)
+async def get_reading_material_detail(reading_material_id: UUID = Query(..., description="UUID of the reading material"),
+                                      current_user: User = Depends(security.get_current_user),
+                                        lecturer_service: LecturerService = Depends(get_lecturer_service)):
+    return await lecturer_service.get_reading_material_detail(reading_material_id, current_user)
