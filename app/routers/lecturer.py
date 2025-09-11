@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, Query
+from fastapi import APIRouter, status, Depends, Query, Form, UploadFile, File
 
 from uuid import UUID
 
@@ -9,6 +9,7 @@ from app.service.lecturer import LecturerService, security
 from app.repository.user import UserRepository, User
 from app.schemas.user import *
 from app.repository.signup_token import SignupTokenRepository
+from app.repository.reading_material import ReadingMaterialRepository
 
 
 lect_router = APIRouter(
@@ -21,7 +22,8 @@ lect_router = APIRouter(
 def get_lecturer_service(session: AsyncSession = Depends(get_session)) -> LecturerService:
     user_repository = UserRepository(session)
     signup_token_repository = SignupTokenRepository(session)
-    return LecturerService(user_repository, signup_token_repository)
+    reading_material_repository = ReadingMaterialRepository(session)
+    return LecturerService(user_repository, signup_token_repository, reading_material_repository)
 
 
 @lect_router.get("/create-signup-link", status_code=status.HTTP_200_OK, response_model=SignupLinkResponse)
@@ -34,3 +36,10 @@ async def generate_student_signup_link(current_user: User = Depends(security.get
 #                                         department_id: UUID = Query(..., description="UUID of department"),
 #         current_user: User = Depends(security.get_current_user), lecturer_service: LecturerService = Depends(get_lecturer_service)):
 #     return await lecturer_service.create_student_login_token(school_id, department_id, current_user)
+
+
+@lect_router.post("/reading-material", status_code=status.HTTP_200_OK)
+async def upload_reading_material(title: str = Form(), description: str = Form(), reading_material: UploadFile = File(...),
+                                  current_user: User = Depends(security.get_current_user),
+                                  lecturer_service: LecturerService = Depends(get_lecturer_service)):
+    return await lecturer_service.upload_reading_material(title, description, reading_material, current_user)
