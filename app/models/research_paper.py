@@ -28,6 +28,7 @@ class ResearchPaper(Base):
 
     supervisor_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("users.id"), nullable=True)
     department_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("departments.id"), nullable=False)
+    student_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
 
     status: Mapped[ResearchStatus] = mapped_column(Enum(ResearchStatus), default=ResearchStatus.pending, nullable=False)
 
