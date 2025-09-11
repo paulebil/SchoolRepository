@@ -1,6 +1,7 @@
 from fastapi import APIRouter, status, Depends, Query, Form, UploadFile, File
 
 from uuid import UUID
+from typing import List
 
 from app.database.database import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,7 @@ from app.repository.user import UserRepository, User
 from app.schemas.user import *
 from app.repository.signup_token import SignupTokenRepository
 from app.repository.reading_material import ReadingMaterialRepository
+from app.schemas.reading_material import ReadingMaterialResponse
 
 
 lect_router = APIRouter(
@@ -38,8 +40,13 @@ async def generate_student_signup_link(current_user: User = Depends(security.get
 #     return await lecturer_service.create_student_login_token(school_id, department_id, current_user)
 
 
-@lect_router.post("/reading-material", status_code=status.HTTP_200_OK)
+@lect_router.post("/reading-material", status_code=status.HTTP_201_CREATED)
 async def upload_reading_material(title: str = Form(), description: str = Form(), reading_material: UploadFile = File(...),
                                   current_user: User = Depends(security.get_current_user),
                                   lecturer_service: LecturerService = Depends(get_lecturer_service)):
     return await lecturer_service.upload_reading_material(title, description, reading_material, current_user)
+
+@lect_router.get("/reading-material", status_code=status.HTTP_200_OK, response_model=List[ReadingMaterialResponse])
+async def get_all_my_reading_materials(current_user: User = Depends(security.get_current_user),
+                                        lecturer_service: LecturerService = Depends(get_lecturer_service)):
+    return await lecturer_service.get_all_my_reading_materials(current_user)

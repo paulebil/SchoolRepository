@@ -10,7 +10,8 @@ from app.repository.signup_token import SignupTokenRepository, SignupToken
 from app.schemas.user import *
 from app.repository.reading_material import ReadingMaterialRepository
 from app.models.reading_material import ReadingMaterial
-from app.repository.object_store import upload_file_to_minio
+from app.schemas.reading_material import *
+from app.repository.object_store import upload_file_to_minio, generate_presigned_url
 
 from app.core.security import Security
 from app.core.settings import get_settings
@@ -87,5 +88,29 @@ class LecturerService:
 
         return JSONResponse(content= {"message": "Upload successful"},status_code=status.HTTP_200_OK)
 
-    async def get_all_my_reading_materials(self, current_user: User):
-        pass
+    async def get_all_my_reading_materials(self, current_user: User) -> List[ReadingMaterialResponse]:
+        # check if user exists
+        lecturer_exists = await self.user_repository.get_user_by_id(current_user.id)
+        if not lecturer_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
+        # check if user is a lecturer
+        if lecturer_exists.role != UserRole.LECTURER:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+        # check if user is active
+        if not lecturer_exists.is_active:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="User account is not active. Cannot perform this action")
+
+        content = []
+        reading_materials = await self.reading_material_repository.get_all_my_reading_material(current_user.id)
+        bucket_name = settings.MINIO_READING_MATERIAL_BUCKET_NAME
+
+        for reading_material in reading_materials:
+            # get presigned urls
+            file_url = await generate_presigned_url(bucket_name, reading_material.object_name)
+            reading_material.file_url = file_url
+            reading_material_response = ReadingMaterialResponse.model_validate(reading_material)
+            content.append(reading_material_response)
+
+        return content
+
