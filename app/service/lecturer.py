@@ -10,6 +10,9 @@ from app.repository.signup_token import SignupTokenRepository, SignupToken
 from app.schemas.user import *
 from app.repository.reading_material import ReadingMaterialRepository
 from app.models.reading_material import ReadingMaterial
+from app.repository.past_paper import PastPaperRepository
+from app.models.past_paper import PastPaper
+from app.schemas.past_paper import PastPaperResponse
 from app.schemas.reading_material import *
 from app.repository.object_store import upload_file_to_minio, generate_presigned_url
 
@@ -21,10 +24,11 @@ settings = get_settings()
 
 class LecturerService:
     def __init__(self, user_repository: UserRepository, signup_token_repository: SignupTokenRepository,
-                 reading_material_repository: ReadingMaterialRepository):
+                 reading_material_repository: ReadingMaterialRepository, past_paper_repository: PastPaperRepository):
         self.user_repository = user_repository
         self.signup_token_repository = signup_token_repository
         self.reading_material_repository = reading_material_repository
+        self.past_paper_repository = past_paper_repository
 
     async def create_student_login_token(self, current_user: User) -> SignupLinkResponse:
         # check if user exists
@@ -132,3 +136,88 @@ class LecturerService:
         file_url = await generate_presigned_url(bucket_name, reading_material.object_name)
         reading_material.file_url = file_url
         return ReadingMaterialResponse.model_validate(reading_material)
+    
+    async def upload_past_paper(self, title: str, course_code: str, course_name: str, year: str, semester: str, 
+                                past_paper: UploadFile, current_user: User):
+        # check if user exists
+        lecturer_exists = await self.user_repository.get_user_by_id(current_user.id)
+        if not lecturer_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
+        # check if user is a lecturer
+        if lecturer_exists.role != UserRole.LECTURER:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+        # check if user is active
+        if not lecturer_exists.is_active:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="User account is not active. Cannot perform this action")
+
+        if not past_paper:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No files uploaded")
+
+        bucket_name = settings.MINIO_PAST_PAPER_BUCKET_NAME
+
+        past_paper_object_name = f"{uuid4().hex}_{past_paper.filename}"
+        # proceed to upload the reading material
+        meta_data = await upload_file_to_minio(bucket_name, past_paper_object_name, past_paper)
+        past_paper_to_create = PastPaper(
+            title=title,
+            course_code=course_code,
+            course_name=course_name,
+            year=year,
+            semester=semester,
+            file_url="something",
+            department_id=lecturer_exists.department_id,
+            lecturer_id=lecturer_exists.id,
+            etag=meta_data["etag"],
+            object_name=meta_data["object_name"]
+        )
+    
+        await self.past_paper_repository.create_past_paper(past_paper_to_create)
+
+        return JSONResponse(content= {"message": "Upload successful"},status_code=status.HTTP_200_OK)
+
+    async def get_all_my_past_paper(self, current_user: User) -> List[PastPaperResponse]:
+        # check if user exists
+        lecturer_exists = await self.user_repository.get_user_by_id(current_user.id)
+        if not lecturer_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
+        # check if user is a lecturer
+        if lecturer_exists.role != UserRole.LECTURER:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+        # check if user is active
+        if not lecturer_exists.is_active:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="User account is not active. Cannot perform this action")
+
+        content = []
+        past_papers = await self.past_paper_repository.get_all_my_past_paper(lecturer_exists.id)
+        bucket_name = settings.MINIO_PAST_PAPER_BUCKET_NAME
+
+        for past_paper in past_papers:
+            # get presigned urls
+            file_url = await generate_presigned_url(bucket_name, past_paper.object_name)
+            past_paper.file_url = file_url
+            past_paper_response = PastPaperResponse.model_validate(past_paper)
+            content.append(past_paper_response)
+
+        return content
+
+    async def get_past_paper_detail(self, past_paper_id: UUID, current_user: User) -> PastPaperResponse:
+        # check if user exists
+        lecturer_exists = await self.user_repository.get_user_by_id(current_user.id)
+        if not lecturer_exists:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
+        # check if user is a lecturer
+        if lecturer_exists.role != UserRole.LECTURER:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+        # check if user is active
+        if not lecturer_exists.is_active:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="User account is not active. Cannot perform this action")
+
+        bucket_name = settings.MINIO_PAST_PAPER_BUCKET_NAME
+        past_paper_response = await self.past_paper_repository.get_past_paper(past_paper_id)
+        file_url = await generate_presigned_url(bucket_name, past_paper_response.object_name)
+        past_paper_response.file_url = file_url
+        return PastPaperResponse.model_validate(past_paper_response)
+
