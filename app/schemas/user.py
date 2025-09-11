@@ -78,3 +78,6 @@ class UserRestPasswordSchema(BaseModel):
     email: str
     token: str
     password: str
+
+class SignupLinkResponse(BaseModel):
+    link: str

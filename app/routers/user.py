@@ -71,7 +71,7 @@ async def get_user_detail(current_user: User = Depends(security.get_current_user
     return current_user
 
 
-@auth_router.get("/signup-link", status_code=status.HTTP_200_OK)
+@auth_router.get("/signup-link", status_code=status.HTTP_200_OK, response_model=SignupLinkResponse)
 async def generate_lecturer_signup_link(school_id: UUID = Query(..., description="UUID of school"),
                                         department_id: UUID = Query(..., description="UUID of department"),
                                         current_user: User = Depends(security.get_current_user),

@@ -134,7 +134,7 @@ class UserService:
         return JSONResponse({"message": "Password updated successfully"})
 
 
-    async def create_lecturer_login_token(self, school_id: UUID, department_id: UUID, current_user: User):
+    async def create_lecturer_login_token(self, school_id: UUID, department_id: UUID, current_user: User) -> SignupLinkResponse:
         # check if user exists
         user_exists = await self.user_repository.get_user_by_id(current_user.id)
         if not user_exists:
@@ -170,4 +170,4 @@ class UserService:
 
         created_token = await self.signup_token_repository.create_signup_token(lecturer_signup_token)
         link = f"https://localhost:3000/signup?token={created_token.token}"
-        return link
+        return SignupLinkResponse(link=link)
