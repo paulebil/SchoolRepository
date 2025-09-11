@@ -8,7 +8,7 @@ class SignupTokenRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create_signup_token(self, signup_token: SignupToken):
+    async def create_signup_token(self, signup_token: SignupToken) -> SignupToken:
         try:
             self.session.add(signup_token)
             await self.session.commit()
@@ -18,7 +18,7 @@ class SignupTokenRepository:
             await self.session.rollback()
             raise
 
-    async def get_signup_token_by_token(self,token: str ):
+    async def get_signup_token_by_token(self,token: str ) -> SignupToken:
         stmt = select(SignupToken).where(SignupToken.token == token)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()

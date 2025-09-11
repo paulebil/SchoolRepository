@@ -81,3 +81,11 @@ class UserRestPasswordSchema(BaseModel):
 
 class SignupLinkResponse(BaseModel):
     link: str
+
+class SignupCreate(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    password_hash: str
+    phone_number: str
+    token: str

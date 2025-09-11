@@ -12,9 +12,10 @@ from app.models.research_paper import ResearchPaper
 from app.models.research_paper_author import ResearchPaperAuthor
 from app.models.reading_material import ReadingMaterial
 
-from app.routers.user import admin_user_router, auth_router
+from app.routers.user import user_router, auth_router
 from app.routers.school import sch_router
 from app.routers.department import dept_router
+from app.routers.lecturer import lect_router
 
 @asynccontextmanager
 async def lifespan(app_:FastAPI):
@@ -25,10 +26,11 @@ async def lifespan(app_:FastAPI):
 
 def create_application():
     application = FastAPI(lifespan=lifespan)
-    application.include_router(admin_user_router)
+    application.include_router(user_router)
     application.include_router(auth_router)
     application.include_router(sch_router)
     application.include_router(dept_router)
+    application.include_router(lect_router)
     return application
 
 

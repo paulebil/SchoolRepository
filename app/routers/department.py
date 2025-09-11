@@ -15,7 +15,7 @@ from typing import List
 
 dept_router = APIRouter(
     prefix="/dept",
-    tags=["Dept"],
+    tags=["Auth Admin"],
     responses={404: {"description": "Not found"}},
     dependencies=[Depends(security.oauth2_scheme), Depends(security.get_current_user)]
 )

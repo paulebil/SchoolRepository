@@ -1,0 +1,36 @@
+from fastapi import APIRouter, status, Depends, Query
+
+from uuid import UUID
+
+from app.database.database import get_session
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.service.lecturer import LecturerService, security
+from app.repository.user import UserRepository, User
+from app.schemas.user import *
+from app.repository.signup_token import SignupTokenRepository
+
+
+lect_router = APIRouter(
+    prefix="/lect",
+    tags=["Auth Lect"],
+    responses={404: {"description": "Not found"}},
+    dependencies=[Depends(security.oauth2_scheme), Depends(security.get_current_user)]
+)
+
+def get_lecturer_service(session: AsyncSession = Depends(get_session)) -> LecturerService:
+    user_repository = UserRepository(session)
+    signup_token_repository = SignupTokenRepository(session)
+    return LecturerService(user_repository, signup_token_repository)
+
+
+@lect_router.get("/create-signup-link", status_code=status.HTTP_200_OK, response_model=SignupLinkResponse)
+async def generate_student_signup_link(current_user: User = Depends(security.get_current_user),
+                                        lecturer_service: LecturerService = Depends(get_lecturer_service)):
+    return await lecturer_service.create_student_login_token(current_user)
+
+# @lect_router.get("/generate-link", status_code=status.HTTP_200_OK, response_model=SignupLinkResponse)
+# async def create_student_signup_link(school_id: UUID = Query(..., description="UUID of school"),
+#                                         department_id: UUID = Query(..., description="UUID of department"),
+#         current_user: User = Depends(security.get_current_user), lecturer_service: LecturerService = Depends(get_lecturer_service)):
+#     return await lecturer_service.create_student_login_token(school_id, department_id, current_user)

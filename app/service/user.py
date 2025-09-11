@@ -133,7 +133,6 @@ class UserService:
         await self.user_repository.update_user(user)
         return JSONResponse({"message": "Password updated successfully"})
 
-
     async def create_lecturer_login_token(self, school_id: UUID, department_id: UUID, current_user: User) -> SignupLinkResponse:
         # check if user exists
         user_exists = await self.user_repository.get_user_by_id(current_user.id)
@@ -171,3 +170,29 @@ class UserService:
         created_token = await self.signup_token_repository.create_signup_token(lecturer_signup_token)
         link = f"https://localhost:3000/signup?token={created_token.token}"
         return SignupLinkResponse(link=link)
+    
+    async def user_signup(self, data: SignupCreate, background_tasks: BackgroundTasks) -> UserResponse:
+        signup_token = await self.signup_token_repository.get_signup_token_by_token(data.token)
+        if not signup_token:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Signup token does not exists.")
+        if signup_token.used:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Signup token already used")
+
+        # proceed to create the user
+        hashed_password = security.hash_password(data.password_hash)
+        data.password_hash = hashed_password
+        user_to_create = User(
+            password_hash=data.password_hash,
+            email=data.email,
+            first_name=data.first_name,
+            last_name=data.last_name,
+            phone_number=data.phone_number
+        )
+        user_to_create.role = signup_token.role
+        user_to_create.school_id = signup_token.school_id
+        user_to_create.department_id = signup_token.department_id
+        user_to_create.supervisor_id = signup_token.generated_by
+
+        created_lecturer = await self.user_repository.create_user(user_to_create)
+        await UserAuthEmailService.send_account_verification_email(created_lecturer, background_tasks)
+        return UserResponse.model_validate(created_lecturer)
