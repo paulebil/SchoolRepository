@@ -19,7 +19,7 @@ from app.repository.department import DepartmentRepository
 
 user_router = APIRouter(
     prefix="/users",
-    tags=["Admin User"]
+    tags=["Unauth User"]
 )
 
 auth_router = APIRouter(
