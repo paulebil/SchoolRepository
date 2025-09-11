@@ -17,7 +17,6 @@ class PastPaper(Base):
     course_name: Mapped[str] = mapped_column(String, nullable=False)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     semester: Mapped[str] = mapped_column(String, nullable=False)  # e.g., "Semester 1"
-    file_url: Mapped[str] = mapped_column(String, nullable=False)
 
     object_name: Mapped[str] = mapped_column(String, nullable=False)
     etag: Mapped[str] = mapped_column(String, nullable=False)

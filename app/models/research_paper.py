@@ -22,7 +22,6 @@ class ResearchPaper(Base):
     title: Mapped[str] = mapped_column(String, nullable=False)
     abstract: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     keywords: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    file_url: Mapped[str] = mapped_column(String, nullable=False)
     object_name: Mapped[str] = mapped_column(String, nullable=False)
     etag: Mapped[str] = mapped_column(String, nullable=False)
 

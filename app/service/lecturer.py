@@ -83,7 +83,6 @@ class LecturerService:
             title=title,
             description=description,
             object_name=meta_data["object_name"],
-            file_url="something",
             etag=meta_data["etag"],
             lecturer_id=current_user.id,
             department_id=lecturer_exists.department_id
@@ -165,7 +164,6 @@ class LecturerService:
             course_name=course_name,
             year=year,
             semester=semester,
-            file_url="something",
             department_id=lecturer_exists.department_id,
             lecturer_id=lecturer_exists.id,
             etag=meta_data["etag"],

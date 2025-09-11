@@ -14,7 +14,6 @@ class ReadingMaterial(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    file_url: Mapped[str] = mapped_column(String, nullable=False)
 
     object_name: Mapped[str] = mapped_column(String, nullable=False)
     etag: Mapped[str] = mapped_column(String, nullable=False)
