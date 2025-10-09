@@ -31,7 +31,7 @@ def get_lecturer_service(session: AsyncSession = Depends(get_session)) -> Lectur
     return LecturerService(user_repository, signup_token_repository, reading_material_repository, past_paper_repository)
 
 
-@lect_router.get("/create-signup-link", status_code=status.HTTP_200_OK, response_model=SignupLinkResponse)
+@lect_router.get("/create-signup-link/", status_code=status.HTTP_200_OK, response_model=SignupLinkResponse)
 async def generate_student_signup_link(current_user: User = Depends(security.get_current_user),
                                         lecturer_service: LecturerService = Depends(get_lecturer_service)):
     return await lecturer_service.create_student_login_token(current_user)
@@ -43,38 +43,36 @@ async def generate_student_signup_link(current_user: User = Depends(security.get
 #     return await lecturer_service.create_student_login_token(school_id, department_id, current_user)
 
 
-@lect_router.post("/reading-material", status_code=status.HTTP_201_CREATED)
+@lect_router.post("/reading-material/", status_code=status.HTTP_201_CREATED)
 async def upload_reading_material(title: str = Form(), description: str = Form(), reading_material: UploadFile = File(...),
                                   current_user: User = Depends(security.get_current_user),
                                   lecturer_service: LecturerService = Depends(get_lecturer_service)):
     return await lecturer_service.upload_reading_material(title, description, reading_material, current_user)
 
-@lect_router.get("/reading-material", status_code=status.HTTP_200_OK, response_model=List[ReadingMaterialResponse])
+@lect_router.get("/reading-material/", status_code=status.HTTP_200_OK, response_model=List[ReadingMaterialResponse])
 async def get_all_my_reading_materials(current_user: User = Depends(security.get_current_user),
                                         lecturer_service: LecturerService = Depends(get_lecturer_service)):
     return await lecturer_service.get_all_my_reading_materials(current_user)
 
-@lect_router.get("/reading-material-detail", status_code=status.HTTP_200_OK, response_model=ReadingMaterialResponse)
-async def get_reading_material_detail(reading_material_id: UUID = Query(..., description="UUID of the reading material"),
-                                      current_user: User = Depends(security.get_current_user),
-                                        lecturer_service: LecturerService = Depends(get_lecturer_service)):
-    return await lecturer_service.get_reading_material_detail(reading_material_id, current_user)
+@lect_router.get("/reading-material/{pk}/", status_code=status.HTTP_200_OK, response_model=ReadingMaterialResponse)
+async def get_reading_material_detail(pk: UUID, current_user: User = Depends(security.get_current_user),
+                                    lecturer_service: LecturerService = Depends(get_lecturer_service)):
+    return await lecturer_service.get_reading_material_detail(pk, current_user)
 
 
-@lect_router.post("/past-paper", status_code=status.HTTP_201_CREATED)
+@lect_router.post("/past-paper/", status_code=status.HTTP_201_CREATED)
 async def upload_past_paper(title: str = Form(), course_code: str = Form(), course_name: str = Form(),
                                   year: str = Form(), semester: str = Form(), past_paper: UploadFile = File(...),
                                   current_user: User = Depends(security.get_current_user),
                                   lecturer_service: LecturerService = Depends(get_lecturer_service)):
     return await lecturer_service.upload_past_paper(title, course_code, course_name, year, semester, past_paper, current_user)
 
-@lect_router.get("/past-paper", status_code=status.HTTP_200_OK, response_model=List[PastPaperResponse])
+@lect_router.get("/past-paper/", status_code=status.HTTP_200_OK, response_model=List[PastPaperResponse])
 async def get_all_my_past_papers(current_user: User = Depends(security.get_current_user),
                                         lecturer_service: LecturerService = Depends(get_lecturer_service)):
     return await lecturer_service.get_all_my_past_paper(current_user)
 
-@lect_router.get("/past-paper-detail", status_code=status.HTTP_200_OK, response_model=PastPaperResponse)
-async def get_past_paper_detail(past_paper_id: UUID = Query(..., description="UUID of the past_paper"),
-                                      current_user: User = Depends(security.get_current_user),
+@lect_router.get("/past-paper/{pk}/", status_code=status.HTTP_200_OK, response_model=PastPaperResponse)
+async def get_past_paper_detail(pk: UUID , current_user: User = Depends(security.get_current_user),
                                         lecturer_service: LecturerService = Depends(get_lecturer_service)):
-    return await lecturer_service.get_past_paper_detail(past_paper_id, current_user)
+    return await lecturer_service.get_past_paper_detail(pk, current_user)

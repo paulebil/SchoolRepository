@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, Query, Form, UploadFile, File
+from fastapi import APIRouter, status, Depends, Query, Form, UploadFile, File, Path
 
 from uuid import UUID
 from typing import List
@@ -27,20 +27,20 @@ def get_student_service(session: AsyncSession = Depends(get_session)) -> Student
     research_paper_repository = ResearchPaperRepository(session)
     return StudentService(user_repository, research_paper_repository)
 
-@stud_router.post("/research-paper", status_code=status.HTTP_201_CREATED)
+@stud_router.post("/research-paper/", status_code=status.HTTP_201_CREATED)
 async def upload_research_paper(title: str = Form(), keywords: str = Form(), abstract: str = Form(),
                             research_paper: UploadFile = File(...),
                             current_user: User = Depends(security.get_current_user),
                             student_service: StudentService = Depends(get_student_service)):
     return await student_service.upload_research_paper(title, abstract, keywords, research_paper, current_user)
 
-@stud_router.get("/research-paper", status_code=status.HTTP_200_OK, response_model=List[ResearchPaperResponse])
+@stud_router.get("/research-paper/", status_code=status.HTTP_200_OK, response_model=List[ResearchPaperResponse])
 async def get_all_my_research_papers(current_user: User = Depends(security.get_current_user),
                                  student_service: StudentService = Depends(get_student_service)):
     return await student_service.get_all_my_research_paper(current_user)
 
-@stud_router.get("/research-paper-detail", status_code=status.HTTP_200_OK, response_model=ResearchPaperResponse)
-async def get_research_paper_detail(research_paper_id: UUID = Query(..., description="UUID of the research_paper"),
+@stud_router.get("/research-paper/{pk}/", status_code=status.HTTP_200_OK, response_model=ResearchPaperResponse)
+async def get_research_paper_detail(pk: UUID ,
                                 current_user: User = Depends(security.get_current_user),
                                 student_service: StudentService = Depends(get_student_service)):
-    return await student_service.get_research_paper_detail(research_paper_id, current_user)
+    return await student_service.get_research_paper_detail(pk, current_user)
