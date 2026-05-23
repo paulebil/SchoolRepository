@@ -24,7 +24,6 @@ class PastPaperResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-
 class PastPaperListResponse(BaseModel):
     items: List[PastPaperResponse]
     total: int

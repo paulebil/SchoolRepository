@@ -17,28 +17,53 @@ dept_router = APIRouter(
     prefix="/dept",
     tags=["Auth Admin"],
     responses={404: {"description": "Not found"}},
-    dependencies=[Depends(security.oauth2_scheme), Depends(security.get_current_user)]
+    dependencies=[Depends(security.oauth2_scheme), Depends(security.get_current_user)],
 )
 
 
-def get_department_service(session: AsyncSession = Depends(get_session)) -> DepartmentService:
+def get_department_service(
+    session: AsyncSession = Depends(get_session),
+) -> DepartmentService:
     user_repository = UserRepository(session)
     school_repository = SchoolRepository(session)
     department_repository = DepartmentRepository(session)
     return DepartmentService(department_repository, school_repository, user_repository)
 
-@dept_router.post("/department/", status_code=status.HTTP_201_CREATED, response_model=DepartmentResponse)
-async def create_department(data: DepartmentCreate,current_user: User = Depends(security.get_current_user)
-                            ,department_service: DepartmentService = Depends(get_department_service) ):
+
+@dept_router.post(
+    "/department/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=DepartmentResponse,
+)
+async def create_department(
+    data: DepartmentCreate,
+    current_user: User = Depends(security.get_current_user),
+    department_service: DepartmentService = Depends(get_department_service),
+):
     return await department_service.create_department(data, current_user)
 
-@dept_router.get("/department/{pk}/", status_code=status.HTTP_200_OK, response_model=List[DepartmentResponse])
-async def get_departments(pk: UUID ,
-                          department_service: DepartmentService = Depends(get_department_service),
-                          current_user: User = Depends(security.get_current_user)):
+
+@dept_router.get(
+    "/department/{pk}/",
+    status_code=status.HTTP_200_OK,
+    response_model=List[DepartmentResponse],
+)
+async def get_departments(
+    pk: UUID,
+    department_service: DepartmentService = Depends(get_department_service),
+    current_user: User = Depends(security.get_current_user),
+):
     return await department_service.get_departments(pk, current_user)
 
-@dept_router.get("/department/{pk}/", status_code=status.HTTP_200_OK, response_model=DepartmentResponse)
-async def get_department(pk: UUID , department_service: DepartmentService = Depends(get_department_service),
-                         current_user: User = Depends(security.get_current_user)):
+
+@dept_router.get(
+    "/department/{pk}/",
+    status_code=status.HTTP_200_OK,
+    response_model=DepartmentResponse,
+)
+async def get_department(
+    pk: UUID,
+    department_service: DepartmentService = Depends(get_department_service),
+    current_user: User = Depends(security.get_current_user),
+):
     return await department_service.get_department(pk, current_user)

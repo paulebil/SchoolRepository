@@ -6,8 +6,11 @@ from app.schemas.school import SchoolCreate, SchoolResponse
 from app.repository.user import UserRepository, User
 from app.models.user import UserRole
 
+
 class SchoolService:
-    def __init__(self,school_repository: SchoolRepository, user_repository: UserRepository ):
+    def __init__(
+        self, school_repository: SchoolRepository, user_repository: UserRepository
+    ):
         self.school_repository = school_repository
         self.user_repository = user_repository
 
@@ -15,17 +18,29 @@ class SchoolService:
         # check if user exists
         user_exists = await self.user_repository.get_user_by_id(data.admin_id)
         if not user_exists:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User with this id does not exists.",
+            )
         # check if user is an admin
         if user_exists.role != UserRole.ADMIN:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User is not an admin to create a school",
+            )
         # check if user is active
         if not user_exists.is_active:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User account is not active. Cannot perform this action")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is not active. Cannot perform this action",
+            )
         # check if school already exist
         school_exists = await self.school_repository.get_school_by_name(data.name)
         if school_exists:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="School with this name already exist")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="School with this name already exist",
+            )
         # proceed to create school
         school_dict = data.model_dump(mode="json")
         # ensure admin_id is UUID (not str)
@@ -35,21 +50,34 @@ class SchoolService:
         created_school = await self.school_repository.create_school(school_to_create)
         return SchoolResponse.model_validate(created_school)
 
-    async def get_my_school(self, school_id: UUID, current_user: User) -> SchoolResponse:
+    async def get_my_school(
+        self, school_id: UUID, current_user: User
+    ) -> SchoolResponse:
         # check if user exists
         user_exists = await self.user_repository.get_user_by_id(current_user.id)
         if not user_exists:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User with this id does not exists.")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User with this id does not exists.",
+            )
         # check if user is an admin
         if user_exists.role != UserRole.ADMIN:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not an admin to create a school")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User is not an admin to create a school",
+            )
         # check if user is active
         if not user_exists.is_active:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                                detail="User account is not active. Cannot perform this action")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is not active. Cannot perform this action",
+            )
         # check if school already exist
         school_exists = await self.school_repository.get_school_by_id(school_id)
         if not school_exists:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="School with this id doesn't exists.")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="School with this id doesn't exists.",
+            )
 
         return SchoolResponse.model_validate(school_exists)

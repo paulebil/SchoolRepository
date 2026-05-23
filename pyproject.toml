@@ -1,0 +1,16 @@
+[project]
+name = "schoolrepository"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.18.4",
+    "fastapi-mail>=1.6.4",
+    "fastapi[standard]>=0.136.1",
+    "minio>=7.2.20",
+    "passlib>=1.7.4",
+    "pwdlib[argon2]>=0.3.0",
+    "pyjwt>=2.13.0",
+    "sqlalchemy>=2.0.49",
+]

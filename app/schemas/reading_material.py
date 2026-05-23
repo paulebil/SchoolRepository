@@ -5,7 +5,6 @@ from pydantic import BaseModel, ConfigDict
 from typing import List
 
 
-
 class ReadingMaterialResponse(BaseModel):
     id: uuid.UUID
     title: str
@@ -20,6 +19,7 @@ class ReadingMaterialResponse(BaseModel):
     uploaded_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class ReadingMaterialListResponse(BaseModel):
     items: List[ReadingMaterialResponse]

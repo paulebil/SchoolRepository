@@ -14,12 +14,17 @@ security = Security()
 
 class PasswordResetService:
 
-    def __init__(self, password_repository: PasswordResetRepository, user_repository: UserRepository):
+    def __init__(
+        self,
+        password_repository: PasswordResetRepository,
+        user_repository: UserRepository,
+    ):
         self.password_reset_repository = password_repository
         self.user_repository = user_repository
 
-
-    async def send_password_reset_email(self, user: User, background_tasks: BackgroundTasks):
+    async def send_password_reset_email(
+        self, user: User, background_tasks: BackgroundTasks
+    ):
         """Generate password reset token and send email to the user."""
 
         # TODO: Make the token url safe
@@ -30,7 +35,9 @@ class PasswordResetService:
         raw_token = f"{string_context}:{token}"
 
         # Store token in the database
-        await self.password_reset_repository.create_password_reset_token(user.id, raw_token)
+        await self.password_reset_repository.create_password_reset_token(
+            user.id, raw_token
+        )
 
         # Prepare reset URL
         reset_url = f"{settings.FRONTEND_HOST}/reset-password?token={raw_token}&email={user.email}"
@@ -48,9 +55,8 @@ class PasswordResetService:
             subject=subject,
             template_name="users/password-reset.html",
             context=data,
-            bg_task=background_tasks
+            bg_task=background_tasks,
         )
-
 
     async def reset_password(self, email: str, token: str, new_password: str):
         """Validate password reset token and update user's password."""
@@ -63,7 +69,9 @@ class PasswordResetService:
         # Validate reset token
         print(f"User Id: {user.id}")
         print(f"User token: {token}")
-        reset_token  = await self.password_reset_repository.get_valid_reset_token(user.id, token)
+        reset_token = await self.password_reset_repository.get_valid_reset_token(
+            user.id, token
+        )
         print(f"Retrived token: {reset_token}")
         if not reset_token:
             raise HTTPException(status_code=400, detail="Invalid or expired token")

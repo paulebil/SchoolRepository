@@ -15,7 +15,7 @@ sch_router = APIRouter(
     prefix="/sch",
     tags=["Auth Admin"],
     responses={404: {"description": "Not found"}},
-    dependencies=[Depends(security.oauth2_scheme), Depends(security.get_current_user)]
+    dependencies=[Depends(security.oauth2_scheme), Depends(security.get_current_user)],
 )
 
 
@@ -24,11 +24,22 @@ def get_school_service(session: AsyncSession = Depends(get_session)) -> SchoolSe
     school_repository = SchoolRepository(session)
     return SchoolService(school_repository, user_repository)
 
-@sch_router.post("/school/", status_code=status.HTTP_201_CREATED, response_model=SchoolResponse)
-async def create_school(data: SchoolCreate, school_service: SchoolService = Depends(get_school_service)):
+
+@sch_router.post(
+    "/school/", status_code=status.HTTP_201_CREATED, response_model=SchoolResponse
+)
+async def create_school(
+    data: SchoolCreate, school_service: SchoolService = Depends(get_school_service)
+):
     return await school_service.create_school(data)
 
-@sch_router.get("/school/{pk}/", status_code=status.HTTP_200_OK, response_model=SchoolResponse)
-async def get_school(  pk: UUID , current_user: User = Depends(security.get_current_user),
-                     school_service: SchoolService = Depends(get_school_service)):
+
+@sch_router.get(
+    "/school/{pk}/", status_code=status.HTTP_200_OK, response_model=SchoolResponse
+)
+async def get_school(
+    pk: UUID,
+    current_user: User = Depends(security.get_current_user),
+    school_service: SchoolService = Depends(get_school_service),
+):
     return await school_service.get_my_school(pk, current_user)

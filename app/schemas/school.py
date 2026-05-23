@@ -22,9 +22,9 @@ class SchoolCreate(BaseModel):
                 "website": "https://greenwood.ac.ug",
                 "email": "info@greenwood.ac.ug",
                 "address": "Plot 12, Ntinda Road, Kampala",
-                "admin_id": "123e4567-e89b-12d3-a456-426614174000"
+                "admin_id": "123e4567-e89b-12d3-a456-426614174000",
             }
-        }
+        },
     }
 
 
@@ -53,7 +53,7 @@ class SchoolResponse(BaseModel):
                 "address": "Plot 12, Ntinda Road, Kampala",
                 "admin_id": "987e6543-e21b-65d3-a456-426614174999",
                 "created_at": "2025-09-09T08:00:00Z",
-                "updated_at": "2025-09-09T10:30:00Z"
+                "updated_at": "2025-09-09T10:30:00Z",
             }
-        }
+        },
     }
